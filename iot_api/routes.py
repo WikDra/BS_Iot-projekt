@@ -59,6 +59,12 @@ def login():
     return jsonify(access_token=token, token_type="Bearer", expires_in=expires_in)
 
 
+@bp.get("/measurements")
+def get_measurements():
+    measurements = current_app.extensions["iot_store"].get_all()
+    return jsonify(measurements)
+
+
 @bp.post("/measurements")
 def add_measurement():
     try:

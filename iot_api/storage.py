@@ -16,6 +16,10 @@ class MeasurementStore:
             self._items.append(record)
             return record
 
+    def get_all(self):
+        with self._lock:
+            return [record.copy() for record in self._items]
+
     def __len__(self):
         with self._lock:
             return len(self._items)
