@@ -16,9 +16,10 @@ $env:IOT_PASSWORD = "wlasne-haslo"
 python run.py
 ```
 
-W drugim terminalu (z aktywnym środowiskiem):
+W drugim terminalu (z aktywnym środowiskiem) ustaw to samo hasło:
 
 ```powershell
+$env:IOT_PASSWORD = "wlasne-haslo"
 python sensor_simulator.py --count 5 --interval 1
 ```
 
@@ -41,6 +42,7 @@ Token pobiera się przez logowanie. API sprawdza podpis HS256, czas ważności i
 `sub`, `iat`, `exp`; brak tokenu, token błędny lub wygasły zwraca `401`.
 Status serwera i logowanie są dostępne bez tokenu.
 
-Obecny symulator nie wysyła jeszcze tokenu JWT, więc jego pomiary zostaną odrzucone (`401`).
+Symulator loguje się danymi z `IOT_USERNAME` (domyślnie `admin`) i `IOT_PASSWORD`,
+a następnie wysyła pomiary z JWT. Po odpowiedzi `401` pobiera nowy token i ponawia pomiar raz.
 Ostatnie 1000 pomiarów jest trzymane w pamięci i znika po wyłączeniu serwera.
 Serwer służy do uruchamiania lokalnie, bez HTTPS.

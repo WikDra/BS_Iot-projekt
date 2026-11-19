@@ -46,22 +46,54 @@ def parse_args(argv=None):
     return parser.parse_args(argv)
 
 
+def login(session, base_url, username, password):
+    response = session.post(
+        base_url.rstrip("/") + "/api/auth/login",
+        json={"username": username, "password": password},
+        timeout=5,
+    )
+    response.raise_for_status()
+    data = response.json()
+    if (
+        not isinstance(data, dict)
+        or not isinstance(data.get("access_token"), str)
+        or not data["access_token"]
+    ):
+        raise ValueError("API nie zwróciło tokenu JWT")
+    session.headers["Authorization"] = "Bearer " + data["access_token"]
+
+
 def main(argv=None):
     args = parse_args(argv)
+    username = os.environ.get("IOT_USERNAME", "admin")
+    password = os.environ.get("IOT_PASSWORD")
+    if not password:
+        print("Ustaw zmienną środowiskową IOT_PASSWORD (hasło użytkownika API)", file=sys.stderr)
+        return 1
+
     rng = random.Random(args.seed)
     sent = 0
     failed = 0
     url = args.url.rstrip("/") + "/api/measurements"
 
     with requests.Session() as session:
+        try:
+            login(session, args.url, username, password)
+        except (requests.RequestException, ValueError) as exc:
+            print(f"Logowanie nie powiodło się: {exc}", file=sys.stderr)
+            return 1
+
         for i in range(1, args.count + 1):
             measurement = generate_measurement(args.device_id, rng)
             prefix = f"[{i}/{args.count}]"
             try:
                 response = session.post(url, json=measurement, timeout=5)
-            except requests.RequestException as exc:
+                if response.status_code == 401:
+                    login(session, args.url, username, password)
+                    response = session.post(url, json=measurement, timeout=5)
+            except (requests.RequestException, ValueError) as exc:
                 failed += 1
-                print(f"{prefix} błąd połączenia: {exc}", file=sys.stderr)
+                print(f"{prefix} nie udało się wysłać pomiaru: {exc}", file=sys.stderr)
             else:
                 if response.status_code == 201:
                     sent += 1
