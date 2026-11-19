@@ -36,5 +36,11 @@ starcie; własny, co najmniej 32-znakowy, można ustawić przez `IOT_JWT_SECRET`
 Przykładowy pomiar: `{"device_id": "sensor-01", "temperature": 22.5, "humidity": 45}`.
 Temperatura musi być w zakresie -50–100 °C, wilgotność 0–100%.
 
-Na tym etapie wysyłanie i pobieranie pomiarów nie wymaga tokenu. Ostatnie 1000 pomiarów jest trzymane w pamięci
-i znika po wyłączeniu serwera. Serwer służy do uruchamiania lokalnie, bez HTTPS.
+Wysyłanie i pobieranie pomiarów wymaga nagłówka `Authorization: Bearer <access_token>`.
+Token pobiera się przez logowanie. API sprawdza podpis HS256, czas ważności i pola
+`sub`, `iat`, `exp`; brak tokenu, token błędny lub wygasły zwraca `401`.
+Status serwera i logowanie są dostępne bez tokenu.
+
+Obecny symulator nie wysyła jeszcze tokenu JWT, więc jego pomiary zostaną odrzucone (`401`).
+Ostatnie 1000 pomiarów jest trzymane w pamięci i znika po wyłączeniu serwera.
+Serwer służy do uruchamiania lokalnie, bez HTTPS.

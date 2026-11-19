@@ -5,7 +5,7 @@ from flask import Blueprint, current_app, jsonify, request
 from werkzeug.security import check_password_hash
 
 from . import __version__
-from .auth import create_access_token
+from .auth import create_access_token, jwt_required
 from .validation import ValidationError, validate_measurement
 
 bp = Blueprint("api", __name__, url_prefix="/api")
@@ -60,12 +60,14 @@ def login():
 
 
 @bp.get("/measurements")
+@jwt_required
 def get_measurements():
     measurements = current_app.extensions["iot_store"].get_all()
     return jsonify(measurements)
 
 
 @bp.post("/measurements")
+@jwt_required
 def add_measurement():
     try:
         measurement = validate_measurement(request.get_json(silent=True))
