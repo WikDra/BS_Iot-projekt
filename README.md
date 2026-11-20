@@ -33,11 +33,16 @@ starcie; własny, co najmniej 32-znakowy, można ustawić przez `IOT_JWT_SECRET`
 - `POST /api/auth/login` — JSON z polami `username` i `password`; zwraca `access_token`.
 - `POST /api/measurements` — JSON z `device_id` i `temperature`, opcjonalnie `humidity` i `timestamp` (ISO 8601).
 - `GET /api/measurements` — lista zapisanych pomiarów w JSON, od najstarszego do najnowszego; gdy brak pomiarów, zwraca `[]`.
+- `GET /api/measurements/stats` — liczba pomiarów (`count`) oraz `min`, `max`, `avg` temperatury i wilgotności.
 
 Przykładowy pomiar: `{"device_id": "sensor-01", "temperature": 22.5, "humidity": 45}`.
 Temperatura musi być w zakresie -50–100 °C, wilgotność 0–100%.
 
-Wysyłanie i pobieranie pomiarów wymaga nagłówka `Authorization: Bearer <access_token>`.
+Statystyki obejmują pomiary aktualnie w pamięci. Średnie są zaokrąglane do dwóch miejsc,
+a brakujące wartości wilgotności są pomijane. Bez pomiarów odpowiedź to
+`{"count": 0, "temperature": null, "humidity": null}`; brak wilgotności oznacza `humidity: null`.
+
+Wysyłanie i pobieranie pomiarów oraz statystyk wymaga nagłówka `Authorization: Bearer <access_token>`.
 Token pobiera się przez logowanie. API sprawdza podpis HS256, czas ważności i pola
 `sub`, `iat`, `exp`; brak tokenu, token błędny lub wygasły zwraca `401`.
 Status serwera i logowanie są dostępne bez tokenu.

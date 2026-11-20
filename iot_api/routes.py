@@ -66,6 +66,24 @@ def get_measurements():
     return jsonify(measurements)
 
 
+@bp.get("/measurements/stats")
+@jwt_required
+def get_measurement_stats():
+    measurements = current_app.extensions["iot_store"].get_all()
+    result: dict[str, object] = {"count": len(measurements)}
+    for field in ("temperature", "humidity"):
+        values = [measurement[field] for measurement in measurements if field in measurement]
+        if values:
+            result[field] = {
+                "min": min(values),
+                "max": max(values),
+                "avg": round(sum(values) / len(values), 2),
+            }
+        else:
+            result[field] = None
+    return jsonify(result)
+
+
 @bp.post("/measurements")
 @jwt_required
 def add_measurement():
