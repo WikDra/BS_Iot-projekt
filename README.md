@@ -27,6 +27,26 @@ API działa pod `http://127.0.0.1:5000`. Login to `admin` (można zmienić przez
 `IOT_USERNAME`), hasło jest brane z `IOT_PASSWORD`. Klucz JWT jest losowany przy
 starcie; własny, co najmniej 32-znakowy, można ustawić przez `IOT_JWT_SECRET`.
 
+## Symulator
+
+Kilka czujników w jednym uruchomieniu:
+
+```powershell
+python sensor_simulator.py --device-id sensor-01 --device-id sensor-02 --count 5 --interval 1
+```
+
+- `--device-id` można powtarzać; bez tej opcji używany jest `sensor-01`. Identyfikatory muszą być poprawne i różne.
+- `--count` to liczba rund (domyślnie 10). Każdy czujnik wysyła jeden pomiar w rundzie, więc przykład daje 10 pomiarów.
+- `--interval` to przerwa między rundami w sekundach, od 0 do 86400 (domyślnie 1). Wysyłka jest kolejna, bez wątków; po ostatniej rundzie nie ma przerwy.
+- `--url` zmienia adres API; domyślnie jest brany z `IOT_API_URL` lub wynosi `http://127.0.0.1:5000`.
+- `--seed` pozwala powtórzyć wartości temperatury i wilgotności; znaczniki czasu nadal pochodzą z bieżącego zegara.
+
+Wszystkie czujniki korzystają z jednej sesji i konta `IOT_USERNAME` / `IOT_PASSWORD`.
+Symulator loguje do konsoli rundę, identyfikator czujnika, wynik wysyłki i ponowne logowanie po `401`.
+Na końcu wypisuje liczbę potwierdzonych pomiarów i błędów łącznie oraz dla każdego czujnika.
+Niepoprawne potwierdzenie `201` jest liczone jako błąd, bez ponawiania POST-a — pomiar mógł już zostać zapisany.
+Kod zakończenia: `0` — wszystkie pomiary potwierdzone, `1` — błąd logowania lub pomiaru, `2` — błędne argumenty.
+
 ## API
 
 - `GET /api/status` — stan serwera i liczba pomiarów.
@@ -77,4 +97,4 @@ Poziomy: `INFO` dla poprawnych żądań i zdarzeń, `WARNING` dla błędów `4xx
 `ERROR` dla błędów `5xx`. Nieoczekiwane wyjątki mają ślad stosu w logach, nie w odpowiedzi API.
 Zapisywane są też logowania, odrzucone i przyjęte pomiary z identyfikatorem czujnika.
 Treści żądań, hasła, tokeny i nagłówek `Authorization` nie są logowane.
-Katalog `logs/` jest pomijany przez Git; logowanie symulatora pozostaje bez zmian.
+Katalog `logs/` jest pomijany przez Git. Symulator loguje oddzielnie do konsoli, nie do pliku serwera.
