@@ -15,6 +15,13 @@ def _now_iso():
     return dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
 
 
+def _read_json():
+    try:
+        return request.get_json(silent=True)
+    except RecursionError:
+        raise ValidationError("JSON is too deeply nested") from None
+
+
 @bp.get("/status")
 def status():
     store = current_app.extensions["iot_store"]
@@ -29,7 +36,12 @@ def status():
 
 @bp.post("/auth/login")
 def login():
-    data = request.get_json(silent=True)
+    try:
+        data = _read_json()
+    except ValidationError as exc:
+        current_app.logger.warning("Odrzucono logowanie: %s", exc)
+        return jsonify(error=str(exc)), 400
+
     if not isinstance(data, dict):
         current_app.logger.warning("Odrzucono logowanie: wymagany obiekt JSON")
         return jsonify(error="Request body must be a JSON object"), 400
@@ -44,6 +56,13 @@ def login():
     ):
         current_app.logger.warning("Odrzucono logowanie: brak lub błędny typ loginu i hasła")
         return jsonify(error="Fields 'username' and 'password' are required"), 400
+
+    try:
+        username.encode("utf-8")
+        password.encode("utf-8")
+    except UnicodeEncodeError:
+        current_app.logger.warning("Odrzucono logowanie: niepoprawny Unicode")
+        return jsonify(error="Fields 'username' and 'password' must contain valid Unicode"), 400
 
     # Sprawdzamy hash także przy błędnym loginie, żeby nie zdradzać go czasem odpowiedzi.
     password_ok = check_password_hash(current_app.config["IOT_PASSWORD_HASH"], password)
@@ -91,7 +110,7 @@ def get_measurement_stats():
 @jwt_required
 def add_measurement():
     try:
-        measurement = validate_measurement(request.get_json(silent=True))
+        measurement = validate_measurement(_read_json())
     except ValidationError as exc:
         current_app.logger.warning("Odrzucono pomiar: %s", exc)
         return jsonify(error=str(exc)), 400

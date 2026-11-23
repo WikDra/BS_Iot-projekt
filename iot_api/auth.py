@@ -35,7 +35,7 @@ def jwt_required(view):
         except jwt.ExpiredSignatureError:
             current_app.logger.warning("Wygasły token JWT")
             return jsonify(error="Token has expired"), 401, {"WWW-Authenticate": "Bearer"}
-        except (jwt.InvalidTokenError, TypeError, ValueError, OverflowError):
+        except (jwt.InvalidTokenError, TypeError, ValueError, OverflowError, RecursionError):
             current_app.logger.warning("Niepoprawny token JWT")
             return jsonify(error="Invalid token"), 401, {"WWW-Authenticate": "Bearer"}
 

@@ -3,7 +3,7 @@ import datetime as dt
 import math
 import re
 
-DEVICE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+DEVICE_ID_RE = re.compile(r"[A-Za-z0-9_-]{1,64}")
 TEMPERATURE_RANGE = (-50.0, 100.0)
 HUMIDITY_RANGE = (0.0, 100.0)
 
@@ -18,7 +18,11 @@ def _number(data, field, value_range, required):
             raise ValidationError(f"Field '{field}' is required")
         return None
     value = data[field]
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or (isinstance(value, float) and not math.isfinite(value))
+    ):
         raise ValidationError(f"Field '{field}' must be a number")
     low, high = value_range
     if not low <= value <= high:
@@ -32,7 +36,7 @@ def validate_measurement(data):
         raise ValidationError("Request body must be a JSON object")
 
     device_id = data.get("device_id")
-    if not isinstance(device_id, str) or not DEVICE_ID_RE.match(device_id):
+    if not isinstance(device_id, str) or not DEVICE_ID_RE.fullmatch(device_id):
         raise ValidationError(
             "Field 'device_id' must be 1-64 characters: letters, digits, '-' or '_'"
         )

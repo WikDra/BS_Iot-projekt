@@ -37,6 +37,7 @@ starcie; własny, co najmniej 32-znakowy, można ustawić przez `IOT_JWT_SECRET`
 
 Przykładowy pomiar: `{"device_id": "sensor-01", "temperature": 22.5, "humidity": 45}`.
 Temperatura musi być w zakresie -50–100 °C, wilgotność 0–100%.
+`device_id` ma od 1 do 64 znaków: litery ASCII, cyfry, `-` lub `_`, bez spacji i znaków nowej linii.
 
 Statystyki obejmują pomiary aktualnie w pamięci. Średnie są zaokrąglane do dwóch miejsc,
 a brakujące wartości wilgotności są pomijane. Bez pomiarów odpowiedź to
@@ -62,6 +63,9 @@ Błędy API są zwracane jako JSON z polem `error`, np. `{"error": "Not Found"}`
 - `405` — niedozwolona metoda HTTP (`Method Not Allowed`); nagłówek `Allow` zawiera dozwolone metody.
 - `413` — przekroczony limit treści żądania 16 KiB (`Request Entity Too Large`).
 - `500` — nieoczekiwany błąd serwera (`Internal Server Error`), bez szczegółów wyjątku w odpowiedzi.
+
+Niepoprawny Unicode w danych logowania i zbyt głęboko zagnieżdżony JSON zwracają `400`,
+a zbyt głęboko zagnieżdżony JWT — `401`.
 
 ## Logi serwera
 
