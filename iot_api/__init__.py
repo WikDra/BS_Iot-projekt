@@ -44,4 +44,15 @@ def create_app(test_config=None):
     from .routes import bp
 
     app.register_blueprint(bp)
+
+    @app.errorhandler(404)
+    @app.errorhandler(405)
+    @app.errorhandler(413)
+    @app.errorhandler(500)
+    def handle_http_error(error):
+        response = error.get_response()
+        response.set_data(app.json.dumps({"error": error.name}))
+        response.content_type = "application/json"
+        return response
+
     return app

@@ -51,3 +51,14 @@ Symulator loguje się danymi z `IOT_USERNAME` (domyślnie `admin`) i `IOT_PASSWO
 a następnie wysyła pomiary z JWT. Po odpowiedzi `401` pobiera nowy token i ponawia pomiar raz.
 Ostatnie 1000 pomiarów jest trzymane w pamięci i znika po wyłączeniu serwera.
 Serwer służy do uruchamiania lokalnie, bez HTTPS.
+
+## Błędy
+
+Błędy API są zwracane jako JSON z polem `error`, np. `{"error": "Not Found"}`.
+
+- `400` — błędne dane lub niepoprawny JSON.
+- `401` — błędny login lub hasło, brak tokenu JWT albo token niepoprawny lub wygasły.
+- `404` — nieistniejący endpoint (`Not Found`).
+- `405` — niedozwolona metoda HTTP (`Method Not Allowed`); nagłówek `Allow` zawiera dozwolone metody.
+- `413` — przekroczony limit treści żądania 16 KiB (`Request Entity Too Large`).
+- `500` — nieoczekiwany błąd serwera (`Internal Server Error`), bez szczegółów wyjątku w odpowiedzi.
