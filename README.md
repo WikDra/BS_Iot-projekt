@@ -62,3 +62,15 @@ Błędy API są zwracane jako JSON z polem `error`, np. `{"error": "Not Found"}`
 - `405` — niedozwolona metoda HTTP (`Method Not Allowed`); nagłówek `Allow` zawiera dozwolone metody.
 - `413` — przekroczony limit treści żądania 16 KiB (`Request Entity Too Large`).
 - `500` — nieoczekiwany błąd serwera (`Internal Server Error`), bez szczegółów wyjątku w odpowiedzi.
+
+## Logi serwera
+
+Logi trafiają do konsoli i pliku `logs/iot.log` w katalogu `iot_system` (UTF-8).
+Po osiągnięciu 1 MiB plik jest rotowany; zachowywane są trzy kopie: `.1`, `.2`, `.3`.
+Każde żądanie ma wpis z metodą, ścieżką, kodem odpowiedzi, czasem obsługi i loginem
+po poprawnym uwierzytelnieniu (`None` dla żądań nieuwierzytelnionych).
+Poziomy: `INFO` dla poprawnych żądań i zdarzeń, `WARNING` dla błędów `4xx` i JWT,
+`ERROR` dla błędów `5xx`. Nieoczekiwane wyjątki mają ślad stosu w logach, nie w odpowiedzi API.
+Zapisywane są też logowania, odrzucone i przyjęte pomiary z identyfikatorem czujnika.
+Treści żądań, hasła, tokeny i nagłówek `Authorization` nie są logowane.
+Katalog `logs/` jest pomijany przez Git; logowanie symulatora pozostaje bez zmian.

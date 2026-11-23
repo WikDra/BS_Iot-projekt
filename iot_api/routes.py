@@ -1,7 +1,7 @@
 
 import datetime as dt
 
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, current_app, g, jsonify, request
 from werkzeug.security import check_password_hash
 
 from . import __version__
@@ -31,6 +31,7 @@ def status():
 def login():
     data = request.get_json(silent=True)
     if not isinstance(data, dict):
+        current_app.logger.warning("Odrzucono logowanie: wymagany obiekt JSON")
         return jsonify(error="Request body must be a JSON object"), 400
 
     username = data.get("username")
@@ -41,6 +42,7 @@ def login():
         or not username
         or not password
     ):
+        current_app.logger.warning("Odrzucono logowanie: brak lub błędny typ loginu i hasła")
         return jsonify(error="Fields 'username' and 'password' are required"), 400
 
     # Sprawdzamy hash także przy błędnym loginie, żeby nie zdradzać go czasem odpowiedzi.
@@ -55,6 +57,7 @@ def login():
         secret=current_app.config["JWT_SECRET_KEY"],
         expires_in=expires_in,
     )
+    g.username = username
     current_app.logger.info("Zalogowano użytkownika %r", username)
     return jsonify(access_token=token, token_type="Bearer", expires_in=expires_in)
 
@@ -90,11 +93,12 @@ def add_measurement():
     try:
         measurement = validate_measurement(request.get_json(silent=True))
     except ValidationError as exc:
+        current_app.logger.warning("Odrzucono pomiar: %s", exc)
         return jsonify(error=str(exc)), 400
 
     measurement["received_at"] = _now_iso()
     record = current_app.extensions["iot_store"].add(measurement)
     current_app.logger.info(
-        "Pomiar #%d z %s: %.2f °C", record["id"], record["device_id"], record["temperature"]
+        "Pomiar #%d device_id=%r: %.2f °C", record["id"], record["device_id"], record["temperature"]
     )
     return jsonify(record), 201

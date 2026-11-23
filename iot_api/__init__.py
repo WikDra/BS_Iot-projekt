@@ -4,6 +4,7 @@ import secrets
 from flask import Flask
 from werkzeug.security import generate_password_hash
 
+from .logging_config import configure_logging
 from .storage import MeasurementStore
 
 __version__ = "0.1.0"
@@ -22,6 +23,8 @@ def create_app(test_config=None):
     )
     if test_config:
         app.config.update(test_config)
+
+    configure_logging(app)
 
     if not app.config["JWT_SECRET_KEY"]:
         app.config["JWT_SECRET_KEY"] = secrets.token_hex(32)
@@ -55,4 +58,5 @@ def create_app(test_config=None):
         response.content_type = "application/json"
         return response
 
+    app.logger.info("API IoT gotowe do obsługi żądań")
     return app

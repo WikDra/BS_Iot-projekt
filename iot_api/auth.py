@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from functools import wraps
 
 import jwt
-from flask import current_app, jsonify, request
+from flask import current_app, g, jsonify, request
 
 
 def create_access_token(username, secret, expires_in=900):
@@ -20,6 +20,7 @@ def jwt_required(view):
     def wrapped(*args, **kwargs):
         authorization = request.headers.get("Authorization", "").split()
         if len(authorization) != 2 or authorization[0].lower() != "bearer":
+            current_app.logger.warning("Brak lub niepoprawny nagłówek Bearer")
             return jsonify(error="Bearer token is required"), 401, {"WWW-Authenticate": "Bearer"}
 
         try:
@@ -32,10 +33,13 @@ def jwt_required(view):
             if payload["sub"] != current_app.config["IOT_USERNAME"]:
                 raise jwt.InvalidTokenError("Invalid subject")
         except jwt.ExpiredSignatureError:
+            current_app.logger.warning("Wygasły token JWT")
             return jsonify(error="Token has expired"), 401, {"WWW-Authenticate": "Bearer"}
         except (jwt.InvalidTokenError, TypeError, ValueError, OverflowError):
+            current_app.logger.warning("Niepoprawny token JWT")
             return jsonify(error="Invalid token"), 401, {"WWW-Authenticate": "Bearer"}
 
+        g.username = payload["sub"]
         return view(*args, **kwargs)
 
     return wrapped

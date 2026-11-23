@@ -28,6 +28,7 @@ dist/
 !.env.example
 
 # Logs and local data
+logs/
 *.log
 *.sqlite
 *.sqlite3

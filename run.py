@@ -1,10 +1,6 @@
-
-import logging
 import os
 
 from iot_api import create_app
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 app = create_app()
 
