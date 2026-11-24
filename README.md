@@ -6,7 +6,7 @@ Logowanie zwraca token JWT ważny przez 15 minut.
 
 ## Uruchomienie
 
-Python 3.10 lub nowszy. W PowerShell, w katalogu `iot_system`:
+Python 3.10 lub nowszy. W PowerShell, w katalogu repozytorium:
 
 ```powershell
 python -m venv .venv
@@ -89,7 +89,7 @@ a zbyt głęboko zagnieżdżony JWT — `401`.
 
 ## Logi serwera
 
-Logi trafiają do konsoli i pliku `logs/iot.log` w katalogu `iot_system` (UTF-8).
+Logi trafiają do konsoli i pliku `logs/iot.log` w katalogu repozytorium (UTF-8).
 Po osiągnięciu 1 MiB plik jest rotowany; zachowywane są trzy kopie: `.1`, `.2`, `.3`.
 Każde żądanie ma wpis z metodą, ścieżką, kodem odpowiedzi, czasem obsługi i loginem
 po poprawnym uwierzytelnieniu (`None` dla żądań nieuwierzytelnionych).
